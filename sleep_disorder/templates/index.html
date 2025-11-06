@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <title>Cek Gangguan Tidur</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='img/favicon.ico') }}" rel="icon">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Libraries -->
+    <link href="{{ url_for('static', filename='lib/animate/animate.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
+
+    <!-- Styles -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg bg-white navbar-light fixed-top shadow py-3 px-4 px-lg-5">
+    <a href="/" class="navbar-brand d-block d-lg-none">
+        <h1 class="text-primary fw-bold m-0">SleepCheck</h1>
+    </a>
+    <div class="collapse navbar-collapse justify-content-center" id="navbarCollapse">
+        <a href="#home" class="nav-item nav-link active">Home</a>
+        <a href="#cekTidur" class="nav-item nav-link">Cek Tidur</a>
+        <a href="#about" class="nav-item nav-link">Tentang</a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="container-fluid bg-light my-6 mt-0" id="home">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6 py-6 pb-0 pt-lg-0">
+                <h1 class="display-3 mb-3">Cek Gangguan Tidur Anda</h1>
+                <p class="lead text-muted">Isi data sederhana untuk mengetahui apakah pola tidur Anda berpotensi mengalami gangguan tidur.</p>
+                <a href="#cekTidur" class="btn btn-primary py-3 px-4 mt-3">Cek Gangguan Tidur</a>
+            </div>
+            <div class="col-lg-6">
+                <img class="img-fluid" src="{{ url_for('static', filename='img/profile.png') }}" alt="Ilustrasi tidur">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Form Cek Gangguan Tidur -->
+<section id="cekTidur" class="container py-5">
+    <h2 class="text-center mb-4">Formulir Cek Gangguan Tidur</h2>
+    <form id="sleepForm" class="row g-3 justify-content-center">
+        <div class="col-md-5">
+            <label for="usia" class="form-label">Usia</label>
+            <input type="number" class="form-control" id="usia" placeholder="Masukkan usia Anda" required min="0">
+        </div>
+        <div class="col-md-5">
+            <label for="durasiTidur" class="form-label">Durasi Tidur per Hari (jam)</label>
+            <input type="number" class="form-control" id="durasiTidur" placeholder="Contoh: 6" required min="0" step="0.1">
+        </div>
+        <div class="col-md-5">
+            <label for="kualitasTidur" class="form-label">Kualitas Tidur (1–10)</label>
+            <input type="number" class="form-control" id="kualitasTidur" placeholder="Contoh: 8" required min="1" max="10">
+        </div>
+        <div class="col-md-5">
+            <label for="stres" class="form-label">Tingkat Stres (1–10)</label>
+            <input type="number" class="form-control" id="stres" placeholder="Contoh: 5" required min="1" max="10">
+        </div>
+        <div class="col-12 text-center mt-3">
+            <button type="submit" class="btn btn-primary px-5 py-2">Cek Sekarang</button>
+        </div>
+
+        <!-- Hasil Prediksi Server-Side -->
+        {% if result %}
+        <div class="alert alert-info mt-4" role="alert">
+            <h5>🔍 Hasil Prediksi:</h5>
+            <p><strong>LightGBM:</strong> {{ result['LightGBM']['label'] }}</p>
+            <ul>
+                {% for cls, prob in result['LightGBM']['prob'].items() %}
+                    <li>{{ cls }}: {{ prob }}%</li>
+                {% endfor %}
+            </ul>
+            <p><strong>CatBoost:</strong> {{ result['CatBoost']['label'] }}</p>
+            <ul>
+                {% for cls, prob in result['CatBoost']['prob'].items() %}
+                    <li>{{ cls }}: {{ prob }}%</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+    </form>
+    <div id="hasilCek" class="text-center mt-4"></div>
+</section>
+
+<!-- Tentang -->
+<section id="about" class="container py-5">
+    <h2 class="text-center mb-4">Tentang SleepCheck</h2>
+    <p class="text-center">SleepCheck adalah alat sederhana untuk membantu Anda memahami kualitas tidur dan risiko gangguan tidur berdasarkan data yang Anda masukkan. Sistem ini dapat dikembangkan menggunakan model Machine Learning.</p>
+</section>
+
+<!-- Footer -->
+<footer class="container-fluid bg-dark text-white py-4">
+    <div class="container text-center">
+        &copy; <a class="border-bottom text-secondary" href="#">KELOMPOK 2 AI</a>
+    </div>
+</footer>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.getElementById('sleepForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const data = {
+        usia: parseInt(document.getElementById('usia').value),
+        durasiTidur: parseFloat(document.getElementById('durasiTidur').value),
+        kualitasTidur: parseFloat(document.getElementById('kualitasTidur').value),
+        stres: parseFloat(document.getElementById('stres').value)
+    };
+
+    try {
+        const res = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const hasil = await res.json();
+
+        if (hasil.status === 'success') {
+            document.getElementById('hasilCek').innerHTML = `
+                <div class="alert alert-info mt-3">
+                    <h5>🔍 Hasil Prediksi:</h5>
+                    <p>${hasil.hasil}</p>
+                </div>
+            `;
+        } else {
+            document.getElementById('hasilCek').innerHTML = `
+                <div class="alert alert-warning mt-3">Terjadi kesalahan: ${hasil.message}</div>
+            `;
+        }
+    } catch (err) {
+        document.getElementById('hasilCek').innerHTML = `
+            <div class="alert alert-danger mt-3">⚠️ Gagal menghubungi server: ${err}</div>
+        `;
+    }
+});
+</script>
+
+</body>
+</html>
