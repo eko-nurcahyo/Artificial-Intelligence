@@ -105,7 +105,8 @@ model_lgbm = LGBMClassifier(
     learning_rate=0.1,
     random_state=42,
     objective='multiclass',  # Tentukan sebagai multiclass
-    num_class=len(label_encoders['Sleep Disorder'].classes_) # Otomatis deteksi jumlah kelas
+    num_class=len(label_encoders['Sleep Disorder'].classes_),# Otomatis deteksi jumlah kelas
+    verbosity=-1
 )
 model_lgbm.fit(X_train, y_train)
 y_pred_lgbm = model_lgbm.predict(X_test)
